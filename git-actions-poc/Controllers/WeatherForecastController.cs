@@ -26,7 +26,7 @@ namespace git_actions_poc.Controllers
                 Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
                 TemperatureC = Random.Shared.Next(-20, 55),
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)],
-                DateTime=DateTime.Now
+                CompleteDateTime = DateTime.Now
             })
             .ToArray();
         }
