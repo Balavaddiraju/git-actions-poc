@@ -1,0 +1,6 @@
+@git_actions_poc_HostAddress = http://localhost:5075
+
+GET {{git_actions_poc_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
