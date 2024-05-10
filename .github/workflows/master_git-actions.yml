@@ -47,20 +47,12 @@ jobs:
       - name: Download artifact from build job
         uses: actions/download-artifact@v3
         with:
-          name: .net-app
+          name: published-app
+          path: ${{ github.workspace }}/published-app
+      - name: Copy files to on-premises server
+        run: |
+          # You need to replace 'your-server' with the actual IP or hostname of your server
+          scp -r ${{ github.workspace }}/published-app/* username@your-server:/path/to/destination
       
-      - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_E3C59A7E9532411693640BF454EC662A }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_FD908E401B6F415E9F7872F3ACE332A7 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_26F86A3E585941E6B0421300273F304E }}
-
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'git-actions'
-          slot-name: 'Production'
-          package: .
+     
           
