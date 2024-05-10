@@ -44,6 +44,6 @@ jobs:
       - name: Copy files to on-premises server
         run: |
           # You need to replace 'your-server' with the actual IP or hostname of your server
-          scp -r ${{ github.workspace }}/published-app/* vmadmin@20.161.64.4:c:/git/publish
+          scp -r ${{ github.workspace }}/published-app/* vmadmin@20.161.64.4:/gitpublish
       
       # Add any additional steps here like configuring IIS or setting up your application on the server
