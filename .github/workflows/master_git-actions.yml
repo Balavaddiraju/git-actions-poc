@@ -1,7 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
-name: Build and deploy ASP.Net Core app to Azure Web App - git-actions
+name: Build and deploy ASP.Net Core app to On-Premises Server - Git Actions
 
 on:
   push:
@@ -19,49 +16,34 @@ jobs:
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '8.x'
-          include-prerelease: true
+          dotnet-version: '8.0.0' # Adjust version as per your requirement
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        run: dotnet publish -c Release -o ${{ github.workspace }}/publish
 
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v3
+      - name: Upload artifact for deployment
+        uses: actions/upload-artifact@v2
         with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          name: published-app
+          path: ${{ github.workspace }}/publish
 
   deploy:
-    runs-on: windows-latest
     needs: build
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    permissions:
-      id-token: write #This is required for requesting the JWT
+    runs-on: self-hosted
 
     steps:
-      - name: Transfer Files to Server
-        uses: appleboy/scp-action@master
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v2
         with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          password: ${{ secrets.SERVER_PASSWORD }}
-          source: "app.tar.gz"
-          target: "/"
+          name: published-app
+          path: ${{ github.workspace }}/published-app
 
-      - name: Extract Files on Server
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USERNAME }}
-          password: ${{ secrets.SERVER_PASSWORD }}
-          script: |
-            cd /
-            tar -xzf app.tar.gz
+      - name: Copy files to on-premises server
+        run: |
+          # You need to replace 'your-server' with the actual IP or hostname of your server
+          scp -r ${{ github.workspace }}/published-app/* vmadmin@20.161.64.4:c:/git/publish
       
-     
-          
+      # Add any additional steps here like configuring IIS or setting up your application on the server
