@@ -41,9 +41,20 @@ jobs:
           name: published-app
           path: ${{ github.workspace }}/published-app
 
-      - name: Copy files to on-premises server
+      - name: Install WinRM
         run: |
-          # You need to replace 'your-server' with the actual IP or hostname of your server
-          scp -r ${{ github.workspace }}/published-app/* vmadmin@20.161.64.4:/gitpublish
-      
-      # Add any additional steps here like configuring IIS or setting up your application on the server
+          if (!(Test-Path -Path "C:\Program Files\PowerShell\7")) { Invoke-WebRequest -Uri "https://aka.ms/install-powershell.ps1" -OutFile "install-powershell.ps1"; Start-Process powershell.exe -Verb RunAs -ArgumentList "C:\install-powershell.ps1" }
+
+      - name: Configure WinRM
+        run: |
+          $securePassword = ConvertTo-SecureString -String "${{ secrets.WINRM_PASSWORD }}" -AsPlainText -Force
+          $credential = New-Object System.Management.Automation.PSCredential("administrator\vmadmin", $securePassword)
+          Enter-PSSession -ComputerName "your-azure-vm" -Credential $credential -Authentication Basic -Port 5986 -UseSSL
+
+      - name: Deploy to Azure VM
+        run: |
+          $remotePath = "C:\published"
+          Copy-Item -Path "${{ github.workspace }}/published-app" -Destination $remotePath -Recurse
+
+      - name: Exit WinRM session
+        run: Exit-PSSession
