@@ -44,15 +44,24 @@ jobs:
       id-token: write #This is required for requesting the JWT
 
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v3
+      - name: Transfer Files to Server
+        uses: appleboy/scp-action@master
         with:
-          name: published-app
-          path: ${{ github.workspace }}/published-app
-      - name: Copy files to on-premises server
-        run: |
-          # You need to replace 'your-server' with the actual IP or hostname of your server
-          scp -r ${{ github.workspace }}/published-app/* username@your-server:/path/to/destination
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          source: "app.tar.gz"
+          target: "/"
+
+      - name: Extract Files on Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USERNAME }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            cd /
+            tar -xzf app.tar.gz
       
      
           
