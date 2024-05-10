@@ -49,7 +49,7 @@ jobs:
         run: |
           $securePassword = ConvertTo-SecureString -String "${{ secrets.WINRM_PASSWORD }}" -AsPlainText -Force
           $credential = New-Object System.Management.Automation.PSCredential("administrator\vmadmin", $securePassword)
-          Enter-PSSession -ComputerName "your-azure-vm" -Credential $credential -Authentication Basic -Port 5986 -UseSSL
+          Enter-PSSession -ComputerName "20.161.64.4" -Credential $credential -Authentication Basic -Port 5986 -UseSSL
 
       - name: Deploy to Azure VM
         run: |
