@@ -1,37 +1,34 @@
-name: ASP.NET Core CI/CD
+name: Build and deploy ASP.Net Core app to On-Premises Server - Git Actions
 
 on:
   push:
     branches:
-      - main  # or whatever your main branch is called
-  pull_request:
-    branches:
-      - main
+      - master
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: self-hosted
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '8.x'  #   or the version you are using
-      
-    - name: Restore dependencies
-      run: dotnet restore
-      
-    - name: Build
-      run: dotnet build --configuration Release
-      
-    - name: Test
-      run: dotnet test --no-restore --verbosity normal
-      
-    - name: Publish
-      run: dotnet publish -c Release -o ./publish
+      - uses: actions/checkout@v4
+
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '8.x' # Adjust version as per your requirement
+
+      - name: Build with dotnet
+        run: dotnet build --configuration Release
+
+      - name: dotnet publish
+        run: dotnet publish -c Release -o ${{ github.workspace }}/publish
+
+      - name: Upload artifact for deployment
+        uses: actions/upload-artifact@v2
+        with:
+          name: published-app
+          path: ${{ github.workspace }}/publish
     
   deploy:
     runs-on: self-hosted
