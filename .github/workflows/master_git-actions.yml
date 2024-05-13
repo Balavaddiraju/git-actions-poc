@@ -19,7 +19,7 @@ jobs:
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: '3.1.x'  # or the version you are using
+        dotnet-version: '8.x'  # or the version you are using
       
     - name: Restore dependencies
       run: dotnet restore
@@ -44,5 +44,5 @@ jobs:
         server: ${{ secrets.SERVER_HOST }}
         username: ${{ secrets.SERVER_USERNAME }}
         password: ${{ secrets.SERVER_PASSWORD }}
-        server-dir: '/path/to/your/deployment/folder'
+        server-dir: '/'
         local-dir: './publish'
