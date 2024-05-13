@@ -1,60 +1,48 @@
-name: Build and deploy ASP.Net Core app to On-Premises Server - Git Actions
+name: ASP.NET Core CI/CD
 
 on:
   push:
     branches:
-      - master
-  workflow_dispatch:
+      - main  # or whatever your main branch is called
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build:
-    runs-on: self-hosted
-
+    runs-on: windows-latest
+    
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '8.x' # Adjust version as per your requirement
-
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
-
-      - name: dotnet publish
-        run: dotnet publish -c Release -o ${{ github.workspace }}/publish
-
-      - name: Upload artifact for deployment
-        uses: actions/upload-artifact@v2
-        with:
-          name: published-app
-          path: ${{ github.workspace }}/publish
-
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '3.1.x'  # or the version you are using
+      
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build --configuration Release
+      
+    - name: Test
+      run: dotnet test --no-restore --verbosity normal
+      
+    - name: Publish
+      run: dotnet publish -c Release -o ./publish
+    
   deploy:
+    runs-on: windows-latest
     needs: build
-    runs-on: self-hosted
-
+    
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v2
-        with:
-          name: published-app
-          path: ${{ github.workspace }}/published-app
-
-      - name: Install WinRM
-        run: |
-          if (!(Test-Path -Path "C:\Program Files\PowerShell\7")) { Invoke-WebRequest -Uri "https://aka.ms/install-powershell.ps1" -OutFile "install-powershell.ps1"; Start-Process powershell.exe -Verb RunAs -ArgumentList "C:\install-powershell.ps1" }
-
-      - name: Configure WinRM
-        run: |
-          $securePassword = ConvertTo-SecureString -String "${{ secrets.WINRM_PASSWORD }}" -AsPlainText -Force
-          $credential = New-Object System.Management.Automation.PSCredential("administrator\vmadmin", $securePassword)
-          Enter-PSSession -ComputerName "20.161.64.4" -Credential $credential -Authentication Basic -Port 5986 -UseSSL
-
-      - name: Deploy to Azure VM
-        run: |
-          $remotePath = "C:\published"
-          Copy-Item -Path "${{ github.workspace }}/published-app" -Destination $remotePath -Recurse
-
-      - name: Exit WinRM session
-        run: Exit-PSSession
+    - name: Deploy to Windows server
+      uses: SamKirkland/FTP-Deploy-Action@4.0.0
+      with:
+        server: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USERNAME }}
+        password: ${{ secrets.SERVER_PASSWORD }}
+        server-dir: '/path/to/your/deployment/folder'
+        local-dir: './publish'
