@@ -16,7 +16,7 @@ jobs:
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: '8.x' # Adjust version as per your requirement
+          dotnet-version: '8.x' # Adjust version as per your requirement  
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
