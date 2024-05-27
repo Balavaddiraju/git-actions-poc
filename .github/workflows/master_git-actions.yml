@@ -11,22 +11,31 @@ jobs:
     runs-on: self-hosted
 
     steps:
-      - uses: actions/checkout@v4
 
-      - name: Set up .NET Core
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '8.x' # Adjust version as per your requirement  
+    - name: Stop IIS app pool
+      run: |
+        $appPoolName = 'git-actions-poc'
+        Import-Module WebAdministration -Verbose
+        Write-Output "Stopping IIS app pool $appPoolName"
+        Stop-WebAppPool -Name $appPoolName
+      shell: pwsh
+      
+    - uses: actions/checkout@v4
 
-      - name: Build with dotnet
-        run: dotnet build --configuration Release
+    - name: Set up .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '8.x' # Adjust version as per your requirement  
 
-      - name: dotnet publish
-        run: dotnet publish -c Release -o ${{ github.workspace }}/publish
+    - name: Build with dotnet
+      run: dotnet build --configuration Release
 
-      - name: Upload artifact for deployment
-        uses: actions/upload-artifact@v2
-        with:
+    - name: dotnet publish
+      run: dotnet publish -c Release -o ${{ github.workspace }}/publish
+
+    - name: Upload artifact for deployment
+      uses: actions/upload-artifact@v2
+      with:
           name: published-app
           path: ${{ github.workspace }}/publish
     
@@ -37,12 +46,14 @@ jobs:
     steps:
    
 
-    - name: Stop IIS app pool
+    - name: Start IIS app pool
       run: |
         $appPoolName = 'git-actions-poc'
-        Import-Module WebAdministration
-        Write-Output "Stopping IIS app pool $appPoolName"
-        Stop-WebAppPool -Name $appPoolName
+        Import-Module WebAdministration -Verbose
+        Write-Output "Starting IIS app pool $appPoolName"
+        Start-WebAppPool -Name $appPoolName
       shell: pwsh
+      
+
     
  
