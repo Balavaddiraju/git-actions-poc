@@ -37,10 +37,12 @@ jobs:
     steps:
    
 
-    - name: Run inline PowerShell script
+    - name: Stop IIS app pool
       run: |
-        Write-Output "Hello, World!"
-        # Add more PowerShell commands here
+        $appPoolName = 'git-actions-poc'
+        Import-Module WebAdministration
+        Write-Output "Stopping IIS app pool $appPoolName"
+        Stop-WebAppPool -Name $appPoolName
       shell: pwsh
     
  
