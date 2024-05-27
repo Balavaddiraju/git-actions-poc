@@ -33,9 +33,8 @@ jobs:
   deploy:
     runs-on: self-hosted
     needs: build
-    
     steps:
     - name: Run PowerShell script
-        shell:pwsh
-        run:|
-          .\deploy.ps1
+      run: ./deploy.ps1
+      shell: pwsh
+ 
