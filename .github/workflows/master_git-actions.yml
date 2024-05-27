@@ -30,11 +30,17 @@ jobs:
           name: published-app
           path: ${{ github.workspace }}/publish
     
-  deploy:
-    runs-on: self-hosted
-    needs: build
+
+  run-inline-powershell:
+    runs-on: windows-latest
+
     steps:
-    - name: Run PowerShell script
-      run: ./deploy.ps1
+   
+
+    - name: Run inline PowerShell script
+      run: |
+        Write-Output "Hello, World!"
+        # Add more PowerShell commands here
       shell: pwsh
+    
  
