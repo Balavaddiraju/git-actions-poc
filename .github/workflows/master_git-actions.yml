@@ -15,7 +15,7 @@ jobs:
           Import-Module WebAdministration -Verbose
           Write-Output "Stopping IIS app pool $appPoolName"
           Stop-WebAppPool -Name $appPoolName
-        shell: pwsh
+        #shell: pwsh
       - uses: actions/checkout@v4
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v1
@@ -39,4 +39,4 @@ jobs:
           #Import-Module WebAdministration -Verbose
           Write-Output "Starting IIS app pool $appPoolName"
           Start-WebAppPool -Name $appPoolName
-        shell: pwsh
+        #shell: pwsh
