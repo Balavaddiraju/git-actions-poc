@@ -1,103 +1,42 @@
+---
 name: Build and deploy ASP.Net Core app to On-Premises Server - Git Actions
-
 on:
   push:
     branches:
       - master
-  workflow_dispatch:
-
+  workflow_dispatch: null
 jobs:
   build:
     runs-on: self-hosted
-
     steps:
-    - name: Stop IIS app pool
-      run: |
-        # Get AppPool Name
+      - name: Stop IIS app pool
+        run: |
           $appPoolName = 'git-actions-poc'
-          # Get the number of retries
-          $retries = 3
-          # Get the number of attempts
-          $delay = 3
-          
-# Check if exists
-if(Test-Path IIS:\AppPools\$appPoolName) {
-
-    # Stop App Pool if not already stopped
-    if ((Get-WebAppPoolState $appPoolName).Value -ne "Stopped") {
-        Write-Output "Stopping IIS app pool $appPoolName"
-        Stop-WebAppPool $appPoolName
-
-        $state = (Get-WebAppPoolState $appPoolName).Value
-        $counter = 1
-
-        # Wait for the app pool to the "Stopped" before proceeding
-        do{
-            $state = (Get-WebAppPoolState $appPoolName).Value
-            Write-Output "$counter/$retries Waiting for IIS app pool $appPoolName to shut down completely. Current status: $state"
-            $counter++
-            Start-Sleep -Milliseconds $delay
-        }
-        while($state -ne "Stopped" -and $counter -le $retries)
-
-        # Throw an error if the app pool is not stopped
-        if($counter -gt $retries) {
-            throw "Could not shut down IIS app pool $appPoolName. `nTry to increase the number of retries ($retries) or delay between attempts ($delay milliseconds)." }
-    }
-    else {
-        Write-Output "$appPoolName already Stopped"
-    }
-}
-else {
-    Write-Output "IIS app pool $appPoolName doesn't exist"
-}
-      shell: pwsh
-
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up .NET Core
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '8.x'   
-
-    - name: Restore dependencies
-      run: dotnet restore
-
-    - name: Build with dotnet
-      run: dotnet build --configuration Release
-
-    - name: Publish with dotnet
-      run: dotnet publish -c Release -o ${{ github.workspace }}/publish
-
-    - name: Upload artifact for deployment
-      uses: actions/upload-artifact@v2
-      with:
-        name: published-app
-        path: ${{ github.workspace }}/publish
-
-  deploy:
-    runs-on: self-hosted
-
+          #Import-Module WebAdministration -Verbose
+          Write-Output "Stopping IIS app pool $appPoolName"
+          Stop-WebAppPool -Name $appPoolName
+        shell: pwsh
+      - uses: actions/checkout@v4
+      - name: Set up .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 8.x
+      - name: Build with dotnet
+        run: dotnet build --configuration Release
+      - name: dotnet publish
+        run: dotnet publish -c Release -o ${{ github.workspace }}/publish
+      - name: Upload artifact for deployment
+        uses: actions/upload-artifact@v2
+        with:
+          name: published-app
+          path: ${{ github.workspace }}/publish
+  run-inline-powershell:
+    runs-on: windows-latest
     steps:
-    - name: Download artifact from build
-      uses: actions/download-artifact@v2
-      with:
-        name: published-app
-        path: ${{ github.workspace }}/publish
-
-    - name: Deploy to IIS
-      run: |
-        $sourcePath = "${{ github.workspace }}/publish"
-        $destinationPath = "D:\apps\git-actions-poc"
-        Write-Output "Copying files from $sourcePath to $destinationPath"
-        Copy-Item -Path $sourcePath\* -Destination $destinationPath -Recurse -Force
-      #shell: bash
-
-    - name: Start IIS app pool
-      run: |
-        $appPoolName = 'git-actions-poc'
-        #Import-Module WebAdministration -Verbose
-        Write-Output "Starting IIS app pool $appPoolName"
-        Start-WebAppPool -Name $appPoolName
-      #shell: bash 
+      - name: Start IIS app pool
+        run: |
+          $appPoolName = 'git-actions-poc'
+          #Import-Module WebAdministration -Verbose
+          Write-Output "Starting IIS app pool $appPoolName"
+          Start-WebAppPool -Name $appPoolName
+        shell: pwsh
