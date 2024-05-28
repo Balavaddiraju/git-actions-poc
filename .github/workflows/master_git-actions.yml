@@ -14,7 +14,7 @@ jobs:
     - name: Stop IIS app pool
       run: |
         $appPoolName = 'git-actions-poc'
-        Import-Module WebAdministration -Verbose
+        #Import-Module WebAdministration -Verbose
         Write-Output "Stopping IIS app pool $appPoolName"
         Stop-WebAppPool -Name $appPoolName
       #shell: bash
@@ -63,7 +63,7 @@ jobs:
     - name: Start IIS app pool
       run: |
         $appPoolName = 'git-actions-poc'
-        Import-Module WebAdministration -Verbose
+        #Import-Module WebAdministration -Verbose
         Write-Output "Starting IIS app pool $appPoolName"
         Start-WebAppPool -Name $appPoolName
       #shell: bash
