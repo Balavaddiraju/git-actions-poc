@@ -12,7 +12,7 @@ jobs:
       - name: Stop IIS app pool
         run: |
           $appPoolName = 'git-actions-poc'
-          Import-Module WebAdministration -Verbose
+          #Import-Module WebAdministration -Verbose
           Write-Output "Stopping IIS app pool $appPoolName"
           Stop-WebAppPool -Name $appPoolName
         #shell: pwsh
