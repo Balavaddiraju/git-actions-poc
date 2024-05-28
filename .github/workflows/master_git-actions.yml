@@ -66,4 +66,4 @@ jobs:
         #Import-Module WebAdministration -Verbose
         Write-Output "Starting IIS app pool $appPoolName"
         Start-WebAppPool -Name $appPoolName
-      #shell: bash
+      #shell: bash 
